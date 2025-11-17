@@ -52,7 +52,7 @@ async function startServer() {
 
 app.get('/', (req, res) => {
     res.status(200).json({
-        message: 'Author Service is running successfully',  
+        message: 'Blog author Service is running successfully',  
     });
 });
 
