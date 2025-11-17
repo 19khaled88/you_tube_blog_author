@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { type Request, type Response } from 'express';
 import dotenv from 'dotenv';
 import { sql } from './utils/db.js';
 import blogRoutes from './routes/blog.js';
@@ -50,7 +50,7 @@ async function startServer() {
     }
 }
 
-app.get('/', (req, res) => {
+app.get('/', (req:Request, res:Response) => {
     res.status(200).json({
         message: 'Blog author Service is running successfully',  
     });
