@@ -1,8 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { sql } from './utils/db.js';
-// import connectDb from './utils/db.js';
-// import authorRoutes from './routes/author.js';
+import blogRoutes from './routes/blog.js';
 
 dotenv.config();
 // connectDb();
@@ -51,6 +50,13 @@ async function startServer() {
     }
 }
 
+app.get('/', (req, res) => {
+    res.status(200).json({
+        message: 'Author Service is running successfully',  
+    });
+});
+
+app.use('/api/v1', blogRoutes);
 
 startServer().then(() => {
     app.use(express.json());
