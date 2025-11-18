@@ -121,22 +121,79 @@ export const updateBlog = TryCatch(async (req: AuthenticationRequest, res) => {
             return;
         }
 
-        const cloud = await configuredCloudinary.uploader.upload(fileBuffer.content, {
-            folder: 'blogs',
-            resource_type: 'auto',
-        });
-        imageUrl = cloud.secure_url;
+
+
+        try {
+            const cloud = await configuredCloudinary.uploader.upload(fileBuffer.content, {
+                folder: 'blogs',
+                resource_type: 'auto',
+            });
+            imageUrl = cloud.secure_url;
+        } catch (error) {
+            return res.status(500).json({
+                message: 'Failed to upload image'
+            });
+        }
+
     }
 
-    const updatedBlog = await sql`
+
+    // Build dynamic UPDATE query based on provided fields
+    const updateFields = [];
+    const values = [];
+
+    if (title !== undefined) {
+        updateFields.push(`title = $${updateFields.length + 1}`);
+        values.push(title);
+    }
+
+    if (description !== undefined) {
+        updateFields.push(`description = $${updateFields.length + 1}`);
+        values.push(description);
+    }
+
+    if (blogcontent !== undefined) {
+        updateFields.push(`blogcontent = $${updateFields.length + 1}`);
+        values.push(blogcontent);
+    }
+
+    if (category !== undefined) {
+        updateFields.push(`category = $${updateFields.length + 1}`);
+        values.push(category);
+    }
+
+    if (imageUrl !== undefined) {
+        updateFields.push(`image = $${updateFields.length + 1}`);
+        values.push(imageUrl);
+    }
+
+    // If no fields to update, return early
+    if (updateFields.length === 0) {
+        return res.status(400).json({ message: "No fields to update" });
+    }
+
+    values.push(id); // Add ID for WHERE clause
+
+    // Construct the dynamic SQL query
+    const query = `
         UPDATE blogs 
-        SET title = ${title}, description = ${description}, blogcontent = ${blogcontent}, category = ${category}, image = ${imageUrl}    
-        WHERE id = ${id} RETURNING *;
-    `;  
-    res.status(200).json({ message: "Blog updated successfully", blog: updatedBlog[0] });
+        SET ${updateFields.join(', ')} 
+        WHERE id = $${values.length} 
+        RETURNING *
+    `;
 
-
-    res.json({ message: "Blog updated successfully", blog: updatedBlog[0] });
-
+    try {
+        const updatedBlog = await (sql.unsafe as any)(query, values);
+        
+        return res.status(200).json({ 
+            message: "Blog updated successfully", 
+            blog: updatedBlog[0] 
+        });
+    } catch (error) {
+        console.error('Database update error:', error);
+        return res.status(500).json({ 
+            message: "Failed to update blog" 
+        });
+    }
 
 });
