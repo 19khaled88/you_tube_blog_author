@@ -91,6 +91,7 @@ export const updateBlog = TryCatch(async (req: AuthenticationRequest, res) => {
 
     const file = req.file;
 
+    // Check if the blog exists and if the user is the author
     const blog = await sql`SELECT * FROM blogs WHERE id = ${id};`;
     if (blog.length === 0) {
         return res.status(404).json({ message: "Blog not found" });
@@ -102,6 +103,8 @@ export const updateBlog = TryCatch(async (req: AuthenticationRequest, res) => {
 
 
     let imageUrl = blog[0]?.image || '';
+
+    // Handle image upload if a new file is provided and delete existing image
     if (file && imageUrl !== '') {
         const fileBuffer = getBuffer(file)
         if (!fileBuffer || !fileBuffer.content) {
@@ -124,6 +127,15 @@ export const updateBlog = TryCatch(async (req: AuthenticationRequest, res) => {
 
 
         try {
+            
+            // Delete existing image from Cloudinary if it exists
+            if (imageUrl) {
+                const existingImagePublicId = extractPublicId(imageUrl);
+                if (existingImagePublicId) {
+                    await configuredCloudinary.uploader.destroy(existingImagePublicId);
+                }
+            }
+            
             const cloud = await configuredCloudinary.uploader.upload(fileBuffer.content, {
                 folder: 'blogs',
                 resource_type: 'auto',
@@ -137,63 +149,41 @@ export const updateBlog = TryCatch(async (req: AuthenticationRequest, res) => {
 
     }
 
-
-    // Build dynamic UPDATE query based on provided fields
-    const updateFields = [];
-    const values = [];
-
-    if (title !== undefined) {
-        updateFields.push(`title = $${updateFields.length + 1}`);
-        values.push(title);
-    }
-
-    if (description !== undefined) {
-        updateFields.push(`description = $${updateFields.length + 1}`);
-        values.push(description);
-    }
-
-    if (blogcontent !== undefined) {
-        updateFields.push(`blogcontent = $${updateFields.length + 1}`);
-        values.push(blogcontent);
-    }
-
-    if (category !== undefined) {
-        updateFields.push(`category = $${updateFields.length + 1}`);
-        values.push(category);
-    }
-
-    if (imageUrl !== undefined) {
-        updateFields.push(`image = $${updateFields.length + 1}`);
-        values.push(imageUrl);
-    }
-
-    // If no fields to update, return early
-    if (updateFields.length === 0) {
-        return res.status(400).json({ message: "No fields to update" });
-    }
-
-    values.push(id); // Add ID for WHERE clause
-
-    // Construct the dynamic SQL query
-    const query = `
-        UPDATE blogs 
-        SET ${updateFields.join(', ')} 
-        WHERE id = $${values.length} 
-        RETURNING *
-    `;
-
+    // Dynamic field updates using COALESCE
     try {
-        const updatedBlog = await (sql.unsafe as any)(query, values);
-        
+        const updatedBlog = await sql`
+            UPDATE blogs 
+            SET 
+                title = COALESCE(${title || null}, title),
+                description = COALESCE(${description || null}, description),
+                blogcontent = COALESCE(${blogcontent || null}, blogcontent),
+                category = COALESCE(${category || null}, category),
+                image = COALESCE(${imageUrl || null}, image)
+            WHERE id = ${id} 
+            RETURNING *
+        `;
+
         return res.status(200).json({ 
             message: "Blog updated successfully", 
             blog: updatedBlog[0] 
         });
+
     } catch (error) {
         console.error('Database update error:', error);
-        return res.status(500).json({ 
-            message: "Failed to update blog" 
-        });
+        return res.status(500).json({ message: "Failed to update blog" });
     }
 
+    
+
 });
+
+function extractPublicId(imageUrl: string): string | null {
+    try {
+        // Extract public ID from Cloudinary URL
+        // Example: https://res.cloudinary.com/demo/image/upload/v1234567/folder/image.jpg
+        const matches = imageUrl.match(/\/upload\/(?:v\d+\/)?(.+?)\./);
+        return matches && matches[1] ? matches[1] : null;
+    } catch {
+        return null;
+    }
+}
