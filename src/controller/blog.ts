@@ -48,14 +48,17 @@ export const createBlog = TryCatch(async (req: AuthenticationRequest, res) => {
         //     resource_type: 'auto',
         // });
 
-        
+
         // 1. Compress the image directly from file buffer
         const compressedBuffer = await compressImage(file.buffer, 1); // Compress to max 1MB 
 
+        // Now use compressedBuffer for Cloudinary upload
+        const base64Image = compressedBuffer.toString('base64');
+        const dataUri = `data:${file.mimetype};base64,${base64Image}`;
 
         // 2. Upload the COMPRESSED buffer to Cloudinary (no need for DataURI)
         const cloud = await configuredCloudinary.uploader.upload(
-            `data:image/jpeg;base64,${compressedBuffer.toString('base64')}`,
+            dataUri,
             {
                 folder: 'blogs',
                 resource_type: 'image',
