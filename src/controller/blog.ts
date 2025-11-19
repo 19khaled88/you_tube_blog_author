@@ -2,6 +2,7 @@ import { configureCloudinary } from "../config/cloudinary.js";
 import type { AuthenticationRequest } from "../middleware/isAuth.js";
 import getBuffer from "../utils/dataUri.js";
 import { sql } from "../utils/db.js";
+import { compressImage } from "../utils/imageCompressor.js";
 import TryCatch from "../utils/TryCatch.js";
 
 
@@ -19,6 +20,8 @@ export const createBlog = TryCatch(async (req: AuthenticationRequest, res) => {
     }
 
     const fileBuffer = getBuffer(file)
+
+
 
     if (!fileBuffer || !fileBuffer.content) {
         res.status(400).json({
@@ -39,11 +42,25 @@ export const createBlog = TryCatch(async (req: AuthenticationRequest, res) => {
     }
 
     try {
-        const cloud = await configuredCloudinary.uploader.upload(fileBuffer.content, {
-            folder: 'blogs',
-            resource_type: 'auto',
-        });
 
+        // const cloud = await configuredCloudinary.uploader.upload(fileBuffer.content, {
+        //     folder: 'blogs',
+        //     resource_type: 'auto',
+        // });
+
+        
+        // 1. Compress the image directly from file buffer
+        const compressedBuffer = await compressImage(file.buffer, 1); // Compress to max 1MB 
+
+
+        // 2. Upload the COMPRESSED buffer to Cloudinary (no need for DataURI)
+        const cloud = await configuredCloudinary.uploader.upload(
+            `data:image/jpeg;base64,${compressedBuffer.toString('base64')}`,
+            {
+                folder: 'blogs',
+                resource_type: 'image',
+            }
+        );
         const result = await sql`
             INSERT INTO blogs (title, description, blogcontent, image, category, author)
             VALUES (${title}, ${description}, ${blogcontent}, ${cloud.secure_url}, ${category}, ${req.user?._id}) RETURNING *;
@@ -88,7 +105,7 @@ export const deleteBlog = TryCatch(async (req: AuthenticationRequest, res) => {
         return res.status(403).json({ message: "You are not authorized to update this blog" });
     }
 
-    
+
     try {
         const deletedBlog = await sql`DELETE FROM blogs WHERE id = ${id} RETURNING *;`;
         const deletedComments = await sql`DELETE FROM comments WHERE blogid = ${id};`;
@@ -144,7 +161,7 @@ export const updateBlog = TryCatch(async (req: AuthenticationRequest, res) => {
 
 
         try {
-            
+
             // Delete existing image from Cloudinary if it exists
             if (imageUrl) {
                 const existingImagePublicId = extractPublicId(imageUrl);
@@ -152,7 +169,7 @@ export const updateBlog = TryCatch(async (req: AuthenticationRequest, res) => {
                     await configuredCloudinary.uploader.destroy(existingImagePublicId);
                 }
             }
-            
+
             const cloud = await configuredCloudinary.uploader.upload(fileBuffer.content, {
                 folder: 'blogs',
                 resource_type: 'auto',
@@ -180,9 +197,9 @@ export const updateBlog = TryCatch(async (req: AuthenticationRequest, res) => {
             RETURNING *
         `;
 
-        return res.status(200).json({ 
-            message: "Blog updated successfully", 
-            blog: updatedBlog[0] 
+        return res.status(200).json({
+            message: "Blog updated successfully",
+            blog: updatedBlog[0]
         });
 
     } catch (error) {
@@ -190,7 +207,7 @@ export const updateBlog = TryCatch(async (req: AuthenticationRequest, res) => {
         return res.status(500).json({ message: "Failed to update blog" });
     }
 
-    
+
 
 });
 
