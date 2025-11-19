@@ -13,8 +13,8 @@ router.get("/blog", (req, res) => {
 
 
 router.get("/blogs", isAuth, getBlogs);
-router.post("/blog/create", isAuth, upload, createBlog);
-router.patch('/blog/:id', isAuth, upload, updateBlog);
+router.post("/blog/create", isAuth, upload.single('file'), createBlog);
+router.patch('/blog/:id', isAuth, upload.single('file'), updateBlog);
 router.delete('/blog/:id', isAuth, deleteBlog);
 
 

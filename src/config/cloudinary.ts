@@ -1,4 +1,4 @@
-import {v2 as cloudinary, type ConfigOptions} from 'cloudinary';
+import { v2 as cloudinary, type ConfigOptions } from 'cloudinary';
 
 
 /**
@@ -6,14 +6,14 @@ import {v2 as cloudinary, type ConfigOptions} from 'cloudinary';
  **/
 
 interface CloudinaryConfig {
-    cloud_name: string;
-    api_key: string;
-    api_secret: string;
-    secure?: boolean;
+  cloud_name: string;
+  api_key: string;
+  api_secret: string;
+  secure?: boolean;
 }
 
-type CloudinaryConf = Required<Pick<ConfigOptions, 'cloud_name' | 'api_key' | 'api_secret'>> & 
-Partial<Omit<ConfigOptions,'cloud_name' | 'api_key' | 'api_secret'>>;
+type CloudinaryConf = Required<Pick<ConfigOptions, 'cloud_name' | 'api_key' | 'api_secret'>> &
+  Partial<Omit<ConfigOptions, 'cloud_name' | 'api_key' | 'api_secret'>>;
 
 
 /**
@@ -38,10 +38,10 @@ export function configureCloudinary(): ConfigurationResult {
     secure: true
   };
 
- 
+
   // Validate required environment variables
   const missingVars: string[] = [];
-  
+
   if (!config.cloud_name) missingVars.push('CLOUDINARY_CLOUD_NAME');
   if (!config.api_key) missingVars.push('CLOUDINARY_API_KEY');
   if (!config.api_secret) missingVars.push('CLOUDINARY_API_SECRET');
@@ -54,9 +54,11 @@ export function configureCloudinary(): ConfigurationResult {
     };
   }
 
+
+
   try {
     cloudinary.config(config);
-    
+
     console.log('✅ Cloudinary configured successfully');
     return {
       success: true,
@@ -64,7 +66,7 @@ export function configureCloudinary(): ConfigurationResult {
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown configuration error';
-    
+
     return {
       success: false,
       cloudinary,
