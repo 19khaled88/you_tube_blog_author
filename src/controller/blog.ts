@@ -79,7 +79,7 @@ export const deleteBlog = TryCatch(async (req: AuthenticationRequest, res) => {
     const { id } = req.params;
 
 
-    const blog = await sql`SELECT FROM blogs WHERE id = ${id} RETURNING *;`;
+    const blog = await sql`SELECT * FROM blogs WHERE id = ${id};`;
     if (blog.length === 0) {
         return res.status(404).json({ message: "Blog not found" });
     }
