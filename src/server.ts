@@ -2,6 +2,7 @@ import express, { type Request, type Response } from 'express';
 import dotenv from 'dotenv';
 import { sql } from './utils/db.js';
 import blogRoutes from './routes/blog.js';
+import { connectRabbitMQ } from './utils/rabbitmq.js';
 
 dotenv.config();
 // connectDb();
@@ -10,6 +11,7 @@ const app = express();
 app.use(express.json({limit:'10mb'}));
 app.use(express.urlencoded({ extended: true, limit:'10mb' }));
 
+connectRabbitMQ();
 
 const port = process.env.PORT;
 

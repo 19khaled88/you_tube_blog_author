@@ -3,6 +3,7 @@ import type { AuthenticationRequest } from "../middleware/isAuth.js";
 import getBuffer from "../utils/dataUri.js";
 import { sql } from "../utils/db.js";
 import { compressImage } from "../utils/imageCompressor.js";
+import { invalidateChacheJob } from "../utils/rabbitmq.js";
 import TryCatch from "../utils/TryCatch.js";
 
 
@@ -69,6 +70,7 @@ export const createBlog = TryCatch(async (req: AuthenticationRequest, res) => {
             VALUES (${title}, ${description}, ${blogcontent}, ${cloud.secure_url}, ${category}, ${req.user?._id}) RETURNING *;
         `;
 
+        await invalidateChacheJob(['blogs:*']);
 
         res.status(201).json({ message: "Blog created successfully", blog: result[0] });
     } catch (error) {
