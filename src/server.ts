@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { sql } from './utils/db.js';
 import blogRoutes from './routes/blog.js';
 import { connectRabbitMQ } from './utils/rabbitmq.js';
+import cors from 'cors';
 
 dotenv.config();
 // connectDb();
@@ -10,6 +11,7 @@ dotenv.config();
 const app = express();
 app.use(express.json({limit:'10mb'}));
 app.use(express.urlencoded({ extended: true, limit:'10mb' }));
+app.use(cors());
 
 connectRabbitMQ();
 

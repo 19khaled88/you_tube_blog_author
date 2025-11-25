@@ -116,6 +116,8 @@ export const deleteBlog = TryCatch(async (req: AuthenticationRequest, res) => {
         const deletedComments = await sql`DELETE FROM comments WHERE blogid = ${id};`;
         const deletedSavedBlogs = await sql`DELETE FROM savedblogs WHERE blogid = ${id};`;
 
+         await invalidateChacheJob(['blogs:*',`blog:${id}`]);
+
         res.status(200).json({ message: "Blog deleted successfully", blog: blog[0] });
     } catch (error) {
         res.status(400).json({ message: "Blog deleted successfully", blog: blog[0] });
@@ -201,6 +203,8 @@ export const updateBlog = TryCatch(async (req: AuthenticationRequest, res) => {
             WHERE id = ${id} 
             RETURNING *
         `;
+
+         await invalidateChacheJob(['blogs:*',`blog:${id}`]);
 
         return res.status(200).json({
             message: "Blog updated successfully",
