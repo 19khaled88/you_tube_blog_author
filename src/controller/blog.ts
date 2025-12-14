@@ -257,3 +257,43 @@ export const GeminiAiTitleResponse = TryCatch(async (req, res) => {
 
   return res.status(200).json({ message: "Content generated", result });
 });
+
+export const GeminiAiDescriptionResponse = TryCatch(async (req, res) => {
+  const { title, description } = req.body;
+
+  // const prompt = `Generate a detailed blog post on the following topic:\n\n${text}\n\nThe blog post should be well-structured, informative, and engaging. Include an introduction, main content with subheadings, and a conclusion. Use a friendly and professional tone.`;
+  const prompt =
+    description === ""
+      ? `Generate only one short blog descpription based on this title:"${title}".
+       Your response must be only one sentence, strictly under 30 words, with no 
+       options, no greetings, and no extra text. Do not explain. Do not say 'here is'. 
+       Just return the description only.`
+      : `Fix the grammar in the following blog description and return only the corrected sentence. Do not add anything else: "${description}"`;
+
+  let result;
+
+  const genai = new GoogleGenAI({ apiKey: process.env.Gemini_API_Key! });
+  
+
+  async function main() {
+    const response = await genai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
+    let rawText = response.text;
+
+    if (!rawText) {
+      return res.status(500).json({ message: "Failed to generate content" });
+    }
+
+    result = rawText
+      .replace(/\*\*/g, "")
+      .replace(/[\r\n]+/g, " ")
+      .replace(/[*_`~]/g, "")
+      .trim();
+  }
+
+  await main();
+
+  return res.status(200).json({ message: "Content generated", result });
+});

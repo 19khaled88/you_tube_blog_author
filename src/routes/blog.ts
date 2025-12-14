@@ -7,6 +7,7 @@ import {
   getBlogs,
   updateBlog,
   GeminiAiTitleResponse,
+  GeminiAiDescriptionResponse,
 } from "../controller/blog.js";
 
 const router = express.Router();
@@ -20,5 +21,6 @@ router.post("/blog/create", isAuth, upload.single("file"), createBlog);
 router.patch("/blog/:id", isAuth, upload.single("file"), updateBlog);
 router.delete("/blog/:id", isAuth, deleteBlog);
 router.post("/geminiResponse/title", GeminiAiTitleResponse);
+router.post("/geminiResponse/description", GeminiAiDescriptionResponse);
 
 export default router;
