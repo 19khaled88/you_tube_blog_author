@@ -297,44 +297,90 @@ export const GeminiAiDescriptionResponse = TryCatch(async (req, res) => {
   return res.status(200).json({ message: "Content generated", result });
 });
 
+// export const GeminiAiBlogResponse = TryCatch(async (req, res) => {
+//   const { blog } = req.body;
+
+//   const prompt = `You will act as a grammar correction engine.
+//     I will provide you with blog content in rich HTML format (from JODIT Editor).
+//     Do not generate or rewrite the cotent with new ideas.
+//     Only correct gramatical, punctuation, and spelling errors while preserving all HTML tags and formatting.
+//     Maintain inline styles, images tags, line breaks, and structural tags exactly as they are.
+//     Return the full corrected HTML string as output.`;
+
+//   if (!blog) {
+//     res.status(400).json({ message: "No blog content provided" });
+//     return;
+//   }
+//   const fullMessage = `${prompt}\n\n${blog}`;
+
+//   const ai = new GoogleGenAI({ apiKey: process.env.Gemini_API_Key! });
+
+//   const response = await ai.models.generateContent({
+//     model: "gemini-1.0-pro",
+//     contents: [{ role: "user", parts: [{ text: fullMessage }] }],
+//   });
+
+//   const responseText = response.text;
+
+//   if (!responseText) {
+//     return res.status(500).json({
+//       message: "AI returned empty response",
+//     });
+//   }
+
+//   const cleanedHTML = responseText
+//     .replace(/^(html|```html|```)\n?/i, "")
+//     .replace(/```$/i, "")
+//     .replace(/\*\*/g, "")
+//     .replace(/[\r\n]+/g, " ")
+//     .replace(/[*_`~]/g, "")
+//     .trim();
+
+//   res.status(200).json({ message: "Content generated", result: cleanedHTML });
+// });
+
 export const GeminiAiBlogResponse = TryCatch(async (req, res) => {
   const { blog } = req.body;
 
-  const prompt = `You will act as a grammar correction engine. 
-    I will provide you with blog content in rich HTML format (from JODIT Editor). 
-    Do not generate or rewrite the cotent with new ideas. 
-    Only correct gramatical, punctuation, and spelling errors while preserving all HTML tags and formatting. 
-    Maintain inline styles, images tags, line breaks, and structural tags exactly as they are. 
-    Return the full corrected HTML string as output.`;
-
-  if (!blog) {
-    res.status(400).json({ message: "No blog content provided" });
-    return;
-  }
-  const fullMessage = `${prompt}\n\n${blog}`;
-
-  const ai = new GoogleGenAI({ apiKey: process.env.Gemini_API_Key! });
-
-  const response = await ai.models.generateContent({
-    model: "gemini-1.0-pro",
-    contents: [{ role: "user", parts: [{ text: fullMessage }] }],
-  });
-
-  const responseText = response.text;
-
-  if (!responseText) {
-    return res.status(500).json({
-      message: "AI returned empty response",
+  if (!blog || typeof blog !== "string") {
+    return res.status(400).json({
+      message: "No blog content provided",
     });
   }
 
-  const cleanedHTML = responseText
-    .replace(/^(html|```html|```)\n?/i, "")
-    .replace(/```$/i, "")
-    .replace(/\*\*/g, "")
-    .replace(/[\r\n]+/g, " ")
-    .replace(/[*_`~]/g, "")
-    .trim();
+  const prompt = `
+    You are a grammar correction engine.
 
-  res.status(200).json({ message: "Content generated", result: cleanedHTML });
+    STRICT RULES:
+    - Input is rich HTML from JODIT Editor
+    - Do NOT add or remove HTML tags
+    - Do NOT rewrite or add new content
+    - Preserve styles, images, and structure
+    - Fix ONLY grammar, spelling, and punctuation
+    - Output HTML ONLY
+  `;
+
+  const fullMessage = `${prompt}\n\n${blog}`;
+
+  const ai = new GoogleGenAI({
+    apiKey: process.env.Gemini_API_Key!,
+  });
+
+  const response = await ai.models.generateContent({
+    model: "gemini-1.5-flash",
+    contents: fullMessage,
+  });
+
+  const output = response.text;
+
+  if (!output) {
+    return res.status(500).json({
+      message: "Empty response from AI",
+    });
+  }
+
+  return res.status(200).json({
+    message: "Content generated",
+    result: output.trim(),
+  });
 });
