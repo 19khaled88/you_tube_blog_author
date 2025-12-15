@@ -313,20 +313,20 @@ export const GeminiAiBlogResponse = TryCatch(async (req, res) => {
   }
   const fullMessage = `${prompt}\n\n${blog}`;
 
-  const ai = new GoogleGenerativeAI(process.env.Gemini_API_Key as string);
+  const ai = new GoogleGenAI({ apiKey: process.env.Gemini_API_Key! });
 
-  const model = ai.getGenerativeModel({ model: "gemini-1.0-pro", });
-
-  const result = await model.generateContent({
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: fullMessage }],
-      },
-    ],
+  const response = await ai.models.generateContent({
+    model: "gemini-1.0-pro",
+    contents: [{ role: "user", parts: [{ text: fullMessage }] }],
   });
 
-  const responseText = result.response.text();
+  const responseText = response.text;
+
+  if (!responseText) {
+    return res.status(500).json({
+      message: "AI returned empty response",
+    });
+  }
 
   const cleanedHTML = responseText
     .replace(/^(html|```html|```)\n?/i, "")
