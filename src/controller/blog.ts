@@ -315,7 +315,7 @@ export const GeminiAiBlogResponse = TryCatch(async (req, res) => {
 
   const ai = new GoogleGenerativeAI(process.env.Gemini_API_Key as string);
 
-  const model = ai.getGenerativeModel({ model: "gemini-1.5-flash", });
+  const model = ai.getGenerativeModel({ model: "gemini-1.0-pro", });
 
   const result = await model.generateContent({
     contents: [
