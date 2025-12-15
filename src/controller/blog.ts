@@ -297,47 +297,6 @@ export const GeminiAiDescriptionResponse = TryCatch(async (req, res) => {
   return res.status(200).json({ message: "Content generated", result });
 });
 
-// export const GeminiAiBlogResponse = TryCatch(async (req, res) => {
-//   const { blog } = req.body;
-
-//   const prompt = `You will act as a grammar correction engine.
-//     I will provide you with blog content in rich HTML format (from JODIT Editor).
-//     Do not generate or rewrite the cotent with new ideas.
-//     Only correct gramatical, punctuation, and spelling errors while preserving all HTML tags and formatting.
-//     Maintain inline styles, images tags, line breaks, and structural tags exactly as they are.
-//     Return the full corrected HTML string as output.`;
-
-//   if (!blog) {
-//     res.status(400).json({ message: "No blog content provided" });
-//     return;
-//   }
-//   const fullMessage = `${prompt}\n\n${blog}`;
-
-//   const ai = new GoogleGenAI({ apiKey: process.env.Gemini_API_Key! });
-
-//   const response = await ai.models.generateContent({
-//     model: "gemini-1.0-pro",
-//     contents: [{ role: "user", parts: [{ text: fullMessage }] }],
-//   });
-
-//   const responseText = response.text;
-
-//   if (!responseText) {
-//     return res.status(500).json({
-//       message: "AI returned empty response",
-//     });
-//   }
-
-//   const cleanedHTML = responseText
-//     .replace(/^(html|```html|```)\n?/i, "")
-//     .replace(/```$/i, "")
-//     .replace(/\*\*/g, "")
-//     .replace(/[\r\n]+/g, " ")
-//     .replace(/[*_`~]/g, "")
-//     .trim();
-
-//   res.status(200).json({ message: "Content generated", result: cleanedHTML });
-// });
 
 export const GeminiAiBlogResponse = TryCatch(async (req, res) => {
   const { blog } = req.body;
@@ -359,7 +318,7 @@ export const GeminiAiBlogResponse = TryCatch(async (req, res) => {
 
   // Use a valid model from the NEW SDK
   const response = await ai.models.generateContent({
-    model: "gemini-1.5-turbo", // ✅ Free and works
+    model: "gemini-2.5-flash", // ✅ Free and works
     contents: fullMessage,
   });
 
