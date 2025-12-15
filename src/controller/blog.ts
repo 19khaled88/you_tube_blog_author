@@ -5,7 +5,7 @@ import { sql } from "../utils/db.js";
 import { compressImage } from "../utils/imageCompressor.js";
 import { invalidateChacheJob } from "../utils/rabbitmq.js";
 import TryCatch from "../utils/TryCatch.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+
 import { GoogleGenAI } from "@google/genai";
 
 export const createBlog = TryCatch(async (req: AuthenticationRequest, res) => {
