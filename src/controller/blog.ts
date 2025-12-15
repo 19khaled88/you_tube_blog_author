@@ -342,32 +342,24 @@ export const GeminiAiDescriptionResponse = TryCatch(async (req, res) => {
 export const GeminiAiBlogResponse = TryCatch(async (req, res) => {
   const { blog } = req.body;
 
-  if (!blog || typeof blog !== "string") {
-    return res.status(400).json({
-      message: "No blog content provided",
-    });
-  }
+  if (!blog) return res.status(400).json({ message: "No blog provided" });
 
   const prompt = `
-    You are a grammar correction engine.
-
-    STRICT RULES:
-    - Input is rich HTML from JODIT Editor
-    - Do NOT add or remove HTML tags
-    - Do NOT rewrite or add new content
-    - Preserve styles, images, and structure
-    - Fix ONLY grammar, spelling, and punctuation
-    - Output HTML ONLY
-  `;
+      You are a grammar correction engine.
+      Rules:
+      - Keep all HTML as-is
+      - Fix only grammar, spelling, punctuation
+      - Do not add or remove content
+      - Output HTML only
+    `;
 
   const fullMessage = `${prompt}\n\n${blog}`;
 
-  const ai = new GoogleGenAI({
-    apiKey: process.env.Gemini_API_Key!,
-  });
+  const ai = new GoogleGenAI({ apiKey: process.env.Gemini_API_Key! });
 
+  // Use a valid model from the NEW SDK
   const response = await ai.models.generateContent({
-    model: "gemini-1.5-flash",
+    model: "gemini-1.5-turbo", // ✅ Free and works
     contents: fullMessage,
   });
 
