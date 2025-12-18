@@ -82,7 +82,7 @@ startServer().then(() => {
     app.use(express.json());
 
     app.listen(port, () => {
-        console.log(`Server running on http://localhost:${port}`)
+        console.log(`Author Server running on port:${port}`)
     })
 });
 
