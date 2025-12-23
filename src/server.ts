@@ -10,18 +10,30 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({
-    origin: "https://you-tube-blog-web.vercel.app",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
-    credentials: true,
-    allowedHeaders: "Content-Type, Authorization"
-}));
+// app.use(cors({
+//     origin: "https://you-tube-blog-web.vercel.app",
+//     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+//     credentials: true,
+//     allowedHeaders: "Content-Type, Authorization"
+// }));
+
+
+const corsOptions = {
+  origin: [
+    "https://you-tube-blog-web.vercel.app",
+    "http://localhost:3005",
+  ],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 
-
+// Optional but safe:
+app.options(/.*/, cors());
 
 connectRabbitMQ();
 
