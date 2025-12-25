@@ -10,7 +10,7 @@ import { GoogleGenAI } from "@google/genai";
 
 export const createBlog = TryCatch(async (req: AuthenticationRequest, res) => {
   // Implementation for creating a blog
-  const { title, description, blogcontent, category } = req.body;
+  const { title, description, blogcontent, category,authorImage } = req.body;
 
   const file = req.file;
 
@@ -59,8 +59,8 @@ export const createBlog = TryCatch(async (req: AuthenticationRequest, res) => {
       resource_type: "image",
     });
     const result = await sql`
-            INSERT INTO blogs (title, description, blogcontent, image, category, author)
-            VALUES (${title}, ${description}, ${blogcontent}, ${cloud.secure_url}, ${category}, ${req.user?._id}) RETURNING *;
+            INSERT INTO blogs (title, description, blogcontent, image, category, author,avatar)
+            VALUES (${title}, ${description}, ${blogcontent}, ${cloud.secure_url}, ${category}, ${req.user?._id},${authorImage}) RETURNING *;
         `;
 
     await invalidateChacheJob(["blogs:*"]);
