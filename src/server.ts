@@ -50,7 +50,7 @@ async function startServer() {
                 image VARCHAR(255) NOT NULL,
                 category VARCHAR(255) NOT NULL,
                 author VARCHAR(255) NOT NULL,
-                avatar VARCHAR(255),
+                avatar VARCHAR(255) DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `;
