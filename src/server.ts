@@ -55,6 +55,12 @@ async function startServer() {
             );
         `;
 
+        // ✅ Ensure avatar exists even if table was created before
+        await sql`
+        ALTER TABLE blogs
+        ADD COLUMN IF NOT EXISTS avatar VARCHAR(255) DEFAULT NULL;
+        `;
+
         await sql`
             CREATE TABLE IF NOT EXISTS comments ( 
                 id SERIAL PRIMARY KEY,
