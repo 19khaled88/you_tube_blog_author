@@ -12,6 +12,8 @@ export const createBlog = TryCatch(async (req: AuthenticationRequest, res) => {
   // Implementation for creating a blog
   const { title, description, blogcontent, category,authorImage } = req.body;
 
+  // console.log({title:title,description:description,blogcontent:blogcontent,category:category,authorImage:authorImage})
+
   const file = req.file;
 
   if (!file) {
@@ -58,6 +60,7 @@ export const createBlog = TryCatch(async (req: AuthenticationRequest, res) => {
       folder: "blogs",
       resource_type: "image",
     });
+
     const result = await sql`
             INSERT INTO blogs (title, description, blogcontent, image, category, author,avatar)
             VALUES (${title}, ${description}, ${blogcontent}, ${cloud.secure_url}, ${category}, ${req.user?._id},${authorImage}) RETURNING *;
