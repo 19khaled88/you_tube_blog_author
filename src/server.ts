@@ -57,8 +57,8 @@ async function startServer() {
 
         // ✅ Ensure avatar exists even if table was created before
         await sql`
-        ALTER TABLE blogs
-        ADD COLUMN IF NOT EXISTS avatar VARCHAR(255) DEFAULT NULL;
+            ALTER TABLE blogs
+            ADD COLUMN IF NOT EXISTS avatar VARCHAR(255) DEFAULT NULL;
         `;
 
         await sql`
@@ -68,8 +68,15 @@ async function startServer() {
                 userId VARCHAR(255) NOT NULL,
                 username VARCHAR(255) NOT NULL,
                 blogId VARCHAR(255) NOT NULL,
+                avatar VARCHAR(255) DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+        `;
+
+        // ✅ Ensure avatar exists even if table was created before
+        await sql`
+            ALTER TABLE comments
+            ADD COLUMN IF NOT EXISTS avatar VARCHAR(255) DEFAULT NULL;
         `;
 
         await sql`
